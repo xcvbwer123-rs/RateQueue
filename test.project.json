@@ -1,0 +1,16 @@
+{
+  "name": "RateQueue",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "RateQueue": {
+        "$path": "src/module"
+      }
+    },
+    "ServerScriptService": {
+      "RateQueueTest": {
+        "$path": "src/test.server.lua"
+      }
+    }
+  }
+}
