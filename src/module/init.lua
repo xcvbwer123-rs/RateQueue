@@ -257,6 +257,16 @@ function rateQueue:__index(key: string)
     end
 end
 
+function rateQueue:__newindex(key: string, newValue: any)
+    if key == "ratePerSecond" then
+        rawset(self, "__rate", newValue)
+    elseif key == "ratePerMinute" then
+        rawset(self, "__rate", newValue/60)
+    else
+        rawset(self, key, newValue)
+    end
+end
+
 function rateQueue:insert(...)
     return self:__insert(false, ...)
 end
