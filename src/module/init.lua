@@ -64,6 +64,10 @@ do
         process.__awaits = void
     end
 
+    function process:__call(...)
+        return process.new(...)
+    end
+
     function process:__index(key: string)
         if key == "success" then
             return self.__lastResult[1] == true
@@ -327,5 +331,8 @@ end
 function rateQueue.findById(id: string)
     return rateQueues[id]
 end
+
+--// Set Properties
+rateQueue.Process = Process
 
 return table.freeze(rateQueue) :: constructor
