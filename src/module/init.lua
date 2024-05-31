@@ -77,6 +77,10 @@ do
     end
 
     function process:hasError()
+        if self.status ~= "completed" then
+            self:await()
+        end
+
         if not self.__lastResult[1] then
             return self.__lastResult[2][1]
         end
@@ -85,6 +89,10 @@ do
     end
 
     function process:getResults()
+        if self.status ~= "completed" then
+            self:await()
+        end
+
         local errorMsg = self:hasError()
 
         if errorMsg then
@@ -95,6 +103,10 @@ do
     end
 
     function process:getResultTable()
+        if self.status ~= "completed" then
+            self:await()
+        end
+        
         local errorMsg = self:hasError()
 
         if errorMsg then
