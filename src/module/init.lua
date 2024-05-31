@@ -229,8 +229,8 @@ function rateQueue:__activate(isInternal: boolean?)
     if isInternal then
         local timeGone = tick() - self.__lastActivated
 
-        if timeGone < self.__rate then
-            self.__process = task.delay(self.__rate - timeGone, self.__activate, self, true)
+        if timeGone < (1 / self.__rate) then
+            self.__process = task.delay((1 / self.__rate) - timeGone, self.__activate, self, true)
             return
         end
     end
@@ -240,7 +240,7 @@ function rateQueue:__activate(isInternal: boolean?)
     process:execute()
 
     self.__lastActivated = tick()
-    self.__process = task.delay(self.__rate, self.__activate, self, true)
+    self.__process = task.delay((1 / self.__rate), self.__activate, self, true)
 end
 
 function rateQueue:__index(key: string)
