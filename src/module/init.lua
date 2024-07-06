@@ -5,6 +5,7 @@ local HttpService = game:GetService("HttpService")
 local rateQueue = {}
 local rateQueues = setmetatable({}, {__mode = "v"})
 local Process: {new: (handler: func, ...any) -> Process}
+local Waitter: {new: (id: string?) -> Waitter}
 
 -- //===================================\\
 -- ||          CLASS - PROCESS          ||
@@ -173,7 +174,101 @@ do
         return setmetatable(object, process)
     end
 
-    Process = table.freeze(setmetatable({new = process.new}, {__call = function(_, ...) return process.new(...) end}))
+    Process = table.freeze(setmetatable(process, {__call = function(_, ...) return process.new(...) end}))
+end
+
+-- //===================================\\
+-- ||          CLASS - PROCESS          ||
+-- \\===================================//
+do
+    local waitter: Waitter = {}
+    local waitters: {[string]: Waitter} = setmetatable({}, {__mode = "v"})
+
+    waitter.waitters = waitters
+
+    function waitter:__index(key)
+        if key == "Destroy" then
+            return rawget(waitter, "destroy")
+        elseif key ~= "__index" then
+            local alternative = rawget(waitter, key)
+
+            if alternative and typeof(alternative) == "function" then
+                return alternative
+            end
+        end
+    end
+
+    function waitter.new(id: string?)
+        if not waitters[id] then
+            local waitter = setmetatable({
+                id = id or HttpService:GenerateGUID(false);
+                container = {};
+                __threads = {};
+            }, waitter)
+
+            waitters[id] = waitter
+        end
+
+        return waitters[id]
+    end
+
+    function waitter:insert(process: Process)
+        if process.status ~= "completed" then
+            table.insert(self.container, process)
+
+            process:finally(function(...)
+                local index = table.find(self.container, process)
+
+                if index then
+                    table.remove(self.container, index)
+                end
+
+                if #self.container <= 0 then
+                    while #self.__threads > 0 do
+                        task.defer(table.remove(self.__threads, 1))
+                    end
+                end
+
+                return ...
+            end)
+        end
+
+        return process
+    end
+
+    function waitter:remove(process: Process)
+        return self:removeById(process.id)
+    end
+
+    function waitter:removeById(id: string)
+        for index, process in ipairs(self.container) do
+            if process.id == id then
+                return table.remove(self.container, index)
+            end
+        end
+    end
+
+    function waitter:await()
+        table.insert(self.__threads, coroutine.running())
+        coroutine.yield()
+
+        return self
+    end
+
+    function waitter:destroy()
+        waitters[self.id] = nil
+        
+        while #self.__threads > 0 do
+            task.defer(table.remove(self.__threads, 1))
+        end
+
+        setmetatable(self, nil)
+        table.clear(self.container)
+        table.clear(self.__threads)
+        table.clear(self)
+    end
+
+    Waitter = table.freeze(setmetatable(waitter, {__call = function(_, ...) return waitter.new(...) end}))
 end
 
 --// Types
@@ -201,6 +296,18 @@ export type Process = {
     hasError: (self: any) -> false | string;
     getResults: (self: any) -> ...any;
     getResultTable: (self: any) -> {any};
+    destroy: (self: any) -> ();
+}
+
+export type Waitter = {
+    id: string;
+    container: {Process};
+
+    insert: (self: any, process: Process) -> Process;
+    remove: (self: any, process: Process) -> Process?;
+    removeById: (self: any, id: string) -> Process?;
+    destroy: (self: any) -> ();
+    await: (self: any) -> Waitter;
 }
 
 export type RateQueue = {
@@ -328,6 +435,7 @@ end
 
 --// Set Properties
 rateQueue.Process = Process
+rateQueue.Waitter = Waitter
 rateQueue.rateQueues = rateQueues
 
 return table.freeze(rateQueue) :: constructor
