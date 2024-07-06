@@ -296,7 +296,6 @@ export type Process = {
     hasError: (self: any) -> false | string;
     getResults: (self: any) -> ...any;
     getResultTable: (self: any) -> {any};
-    destroy: (self: any) -> ();
 }
 
 export type Waitter = {
