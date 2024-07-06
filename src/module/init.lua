@@ -6,9 +6,6 @@ local rateQueue = {}
 local rateQueues = setmetatable({}, {__mode = "v"})
 local Process: {new: (handler: func, ...any) -> Process}
 
---// Set Properties
-rateQueue.rateQueues = rateQueues
-
 -- //===================================\\
 -- ||          CLASS - PROCESS          ||
 -- \\===================================//
@@ -62,10 +59,6 @@ do
         end
 
         process.__awaits = void
-    end
-
-    function process:__call(...)
-        return process.new(...)
     end
 
     function process:__index(key: string)
@@ -180,7 +173,7 @@ do
         return setmetatable(object, process)
     end
 
-    Process = table.freeze(process)
+    Process = table.freeze(setmetatable({new = process.new}, {__call = function(_, ...) return process.new(...) end}))
 end
 
 --// Types
@@ -189,6 +182,7 @@ type func = (...any) -> ...any;
 type constructor = {
     new: (id: string?, ratePerMinute: number?, ratePerSecond: number?) -> RateQueue;
     findById: (id: string) -> RateQueue?;
+    Process: ((handler: func, ...any) -> Process) & {new: (handler: func, ...any) -> Process};
 }
 
 export type Process = {
@@ -334,5 +328,6 @@ end
 
 --// Set Properties
 rateQueue.Process = Process
+rateQueue.rateQueues = rateQueues
 
 return table.freeze(rateQueue) :: constructor
