@@ -181,7 +181,7 @@ end
 -- ||          CLASS - WAITTER          ||
 -- \\===================================//
 do
-    local waitter: Waitter = {}
+    local waitter = {}
     local waitters: {[string]: Waitter} = setmetatable({}, {__mode = "v"})
 
     waitter.waitters = waitters
@@ -199,9 +199,11 @@ do
     end
 
     function waitter.new(id: string?)
+        local id = id or HttpService:GenerateGUID(false)
+
         if not waitters[id] then
             local waitter = setmetatable({
-                id = id or HttpService:GenerateGUID(false);
+                id = id;
                 container = {};
                 __threads = {};
             }, waitter)
@@ -268,6 +270,14 @@ do
         table.clear(self)
     end
 
+    function waitter:executeAll()
+        for _, process in ipairs(self.container) do
+            process:execute()
+        end
+
+        return self
+    end
+
     Waitter = table.freeze(setmetatable(waitter, {__call = function(_, ...) return waitter.new(...) end}))
 end
 
@@ -307,6 +317,7 @@ export type Waitter = {
     removeById: (self: any, id: string) -> Process?;
     destroy: (self: any) -> ();
     await: (self: any) -> Waitter;
+    executeAll: (self: any) -> Waitter;
 }
 
 export type RateQueue = {
