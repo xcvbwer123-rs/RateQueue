@@ -288,6 +288,7 @@ type constructor = {
     new: (id: string?, ratePerMinute: number?, ratePerSecond: number?) -> RateQueue;
     findById: (id: string) -> RateQueue?;
     Process: ((handler: func, ...any) -> Process) & {new: (handler: func, ...any) -> Process};
+    Waitter: ((id: string?) -> Waitter) & {new: (id: string?) -> Waitter, waitters: {[string]: Waitter}};
 }
 
 export type Process = {
