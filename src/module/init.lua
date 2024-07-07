@@ -20,7 +20,7 @@ do
         local n=0;for _,_ in pairs(t)do n+=1;end;return(n)
     end
 
-    local function resolve(process: Process, pipeline)
+    local function resolve(process, pipeline)
         local handler, args, status = table.unpack(pipeline)
 
         if status == nil or process.__lastResult[1] == status then
@@ -37,7 +37,7 @@ do
         end
     end
 
-    local function executeProcess(process: Process)
+    local function executeProcess(process)
         process.status = "running"
 
         local results = {pcall(process.handler, table.unpack(process.arguments))}
