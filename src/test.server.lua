@@ -1,36 +1,42 @@
----@module module
-local RateQueue = require(game:GetService("ReplicatedStorage"):WaitForChild("RateQueue"))
+-- RateQueue 예시
+local Players = game:GetService("Players")
+local BadgeService = game:GetService("BadgeService")
 
--- 초당 1번씩만 실행되는 큐
-local TestQueue = RateQueue.new("TestQueue", nil, 1)
-local progress = 0
+local RateQueue = require(game:GetService("ReplicatedStorage"):WaitForChild("RateQueue")) ---@module module
+local AwardQueue = RateQueue.new("AwardQueue", 85) -- 뱃지 서비스 메소드 요청은 분당 50 + 35 * 플레이어수이므로 최소 요청 횟수로 맞춤
 
-for index = 1, 10 do
-    TestQueue:insert(function()
-        task.wait(math.random()) -- Yield 하는것도 넣을수 있음
-        print(`Task #{index} Completed.`)
-    end):andThen(function()
-        progress += 1
-        print(`Progress : {progress} / 10`)
-    end)
+local function AwardBadgesToPlayers(BadgeIds: {number})
+    for _, Player in ipairs(Players:GetPlayers()) do
+        for _, BadgeId in ipairs(BadgeIds) do
+            AwardQueue:insert(function()
+                return BadgeService:AwardBadge(Player.UserId, BadgeId)
+            end):andThen(function(Success)
+                if Success then
+                    print(`{Player.Name} is awarded {BadgeId}!`)
+                end
+            end):catch(function(Error)
+                warn(`Badge Award failed! : {Error}`)
+            end)
+        end
+    end
 end
 
-TestQueue:insertFront(function()
-    print("Front inserted task!")
-end)
+AwardBadgesToPlayers({
+    -- some badge ids
+})
 
-local process = TestQueue:insert(function()
-    print("this may ignored!")
-end)
+-- Waitter 예시
+local TeleportService = game:GetService("TeleportService")
 
-TestQueue:insert(function()
-    print("Last inserted task!")
-end):await():andThen(function()
-    print("all tasks completed!!")
-end)
+local RateQueue = require(game:GetService("ReplicatedStorage"):WaitForChild("RateQueue")) ---@module module
+local RequestWaitter = RateQueue.Waitter()
 
-if TestQueue:remove(process) then
-    print("remove completed!")
-else
-    print("remove failed!")
+for _, Player in ipairs(Players:GetPlayers()) do
+    RequestWaitter:insert(RateQueue.Process(function()
+        TeleportService:Teleport(game.PlaceId, Player)
+    end))
 end
+
+RequestWaitter:executeAll():await():destroy()
+
+print("Teleport completed!")
