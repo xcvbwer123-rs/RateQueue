@@ -19,6 +19,26 @@ RateQueue오브젝트를 반환합니다. id값에 아무것도 없으면 자동
 
 생성되어있는 RateQueue오브젝트중에서 같은 id값을 가지고 있는 오브젝트를 반환합니다.
 
+### Constructor.Process
+```lua
+.Process(handler, ...arguments) --> [Process]
+-- hander [function]
+-- arguments [any]
+```
+
+새 [Process](#process)를 생성합니다. 
+
+    !!!warning
+    해당 Process는 :execute()를 해주지 않으면 실행되지 않습니다.
+
+### Constructor.Waitter
+```lua
+.Waitter(id) --> [Waitter]
+-- id [string | nil]
+```
+
+해당 `id`값을 가진 새 [Waitter](#waitter)를 생성합니다. _`id`값을 따로 설정하지 않은경우 랜덤하게 설정됩니다._
+
 ## RateQueue
 ### RateQueue.id
 ```lua
@@ -207,3 +227,65 @@ Process:getResultTable() --> results [table] {Yields}
 ```
 
 작업이 종료되지 않았다면 작업이 모두 끝날때까지 기다렸다가, 모든 작업이 완료되었을때 오류가 있었으면 오류를 내고, 아니면 결과들이 담긴 테이블을 반환합니다.
+
+## Waitter
+### Waitter.id
+```lua
+Waitter.id [string]
+-- 변경할수 있습니다.
+```
+
+`Waitter`의 고유 id값입니다.
+
+### Waitter.container
+```lua
+Waitter.container [table]
+-- Process값들이 담겨있는 리스트 형식의 테이블.
+```
+
+`Waitter.container`는 [Waitter:insert()](#waitterinsert)로 집어넣은 [Process](#process)값들이 담겨있는 테이블입니다.
+
+### Waitter:insert
+```lua
+Waitter:insert(process) --> [Process]
+-- process [Process]
+```
+
+[Waitter.container](#waittercontainer)로 [Process](#process)값을 집어넣고, 그 [Process](#process)를 반환합니다.
+
+### Waitter:remove
+```lua
+Waitter:remove(process) --> [Process | nil]
+-- process [Process]
+```
+
+[Waitter.container](#waittercontainer)에서 `process`가 있을경우 항목에서 지우고 `process`를 반환합니다.
+
+### Waitter:removeById
+```lua
+Waitter:removeById(id) --> [Process | nil]
+-- id [string]
+```
+
+[Waitter.container](#waittercontainer)에서 `id`값과 일치하는 [Process.id](#processid)값을 가지고 있는 [Process](#process)를 찾은경우, 항목에서 지우고 해당 [Process](#process)를 반환합니다.
+
+### Waitter:await
+```lua
+Waitter:await() --> self [Waitter] {Yields} {Chainable}
+```
+
+[Waitter.container](#waittercontainer)안의 모든 [Process](#process)값들이 완료될때까지 기다립니다.
+
+### Waitter:executeAll
+```lua
+Waitter:executeAll() ---> self [Waitter] {Chainable}
+```
+
+[Waitter.container](#waittercontainer)안의 모든 [Process](#process)값들을 실행시킵니다.
+
+### Waitter:destroy
+```lua
+Waitter:destroy() --> [nil]
+```
+
+[Waitter:await()](#waitterawait)중인 모든 `thread`들을 실행시키고 해당 [Waitter.id](#waitterid)값을 가진 `Waitter`의 모든 데이터를 삭제합니다.
