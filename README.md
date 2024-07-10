@@ -4,7 +4,7 @@
 ## Constructor
 ### Constructor.new
 ```lua
-.new(id: string?, ratePerMinute: number?, ratePerSecond: number) -> RateQueue
+.new(id: string?, ratePerMinute: number?, ratePerSecond: number) --> [RateQueue]
 ```
 
 RateQueue오브젝트를 반환합니다. id값에 아무것도 없으면 자동으로 생성됩니다.
@@ -14,10 +14,17 @@ RateQueue오브젝트를 반환합니다. id값에 아무것도 없으면 자동
 
 ### Constructor.findById
 ```lua
-.findById(id: string) -> RateQueue?
+.findById(id: string) --> [RateQueue | nil]
 ```
 
 생성되어있는 RateQueue오브젝트중에서 같은 id값을 가지고 있는 오브젝트를 반환합니다.
+
+### Constructor.rateQueues
+```lua
+.rateQueues [table]
+```
+
+{\[id\]: RateQueue}의 형식으로 [RateQueue](#ratequeue)값들이 들어있는 테이블입니다.
 
 ### Constructor.Process
 ```lua
