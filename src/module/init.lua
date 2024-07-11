@@ -251,8 +251,10 @@ do
     end
 
     function waitter:await()
-        table.insert(self.__threads, coroutine.running())
-        coroutine.yield()
+        if #self.container > 0 then
+            table.insert(self.__threads, coroutine.running())
+            coroutine.yield()
+        end
 
         return self
     end
